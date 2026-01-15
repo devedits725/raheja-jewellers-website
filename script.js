@@ -29,7 +29,6 @@ backToTop.onclick = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-/* SCROLL ANIMATION (SECTIONS + CATALOGUE ITEMS) */
 const animatedElements = document.querySelectorAll(".animate, .catalogue-grid .item");
 
 const observer = new IntersectionObserver(
@@ -37,12 +36,14 @@ const observer = new IntersectionObserver(
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add("show");
-      } else {
-        entry.target.classList.remove("show");
+        observer.unobserve(entry.target); // important for mobile
       }
     });
   },
-  { threshold: 0.5 }
+  {
+    threshold: 0.2,         // LOWER threshold for mobile
+    rootMargin: "0px 0px -50px 0px"
+  }
 );
 
 animatedElements.forEach(el => observer.observe(el));
