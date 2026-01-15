@@ -4,7 +4,7 @@ function scrollToCatalogue() {
   });
 }
 
-// Image popup logic
+/* Image Popup */
 const popup = document.getElementById("popup");
 const popupImg = document.getElementById("popupImg");
 const closePopup = document.getElementById("closePopup");
@@ -16,12 +16,28 @@ document.querySelectorAll(".item img").forEach(img => {
   });
 });
 
-closePopup.onclick = () => {
-  popup.style.display = "none";
+closePopup.onclick = () => popup.style.display = "none";
+
+/* Back to Top */
+const backToTop = document.getElementById("backToTop");
+
+window.addEventListener("scroll", () => {
+  backToTop.style.display = window.scrollY > 300 ? "block" : "none";
+});
+
+backToTop.onclick = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-popup.onclick = (e) => {
-  if (e.target === popup) {
-    popup.style.display = "none";
-  }
-};
+/* Scroll Animations */
+const animatedElements = document.querySelectorAll(".animate");
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("show");
+    }
+  });
+}, { threshold: 0.2 });
+
+animatedElements.forEach(el => observer.observe(el));
