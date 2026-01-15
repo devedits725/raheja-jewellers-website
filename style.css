@@ -81,9 +81,15 @@ section {
   padding: 15px;
   overflow: hidden;
   cursor: pointer;
-  opacity: 0;
-  transform: scale(0.7);
+  opacity: 1;              /* visible by default */
+  transform: scale(1);     /* normal size */
   transition: all 0.4s ease;
+}
+
+/* animation only when JS adds show */
+.item.show {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .item.show {
