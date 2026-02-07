@@ -57,14 +57,16 @@ window.addEventListener('scroll', () => {
     });
 });
 
-// Scroll Reveal Animation
+// Scroll Reveal Animation - Optimized
+let ticking = false;
+
 function revealOnScroll() {
     const reveals = document.querySelectorAll('.reveal');
     
     reveals.forEach(element => {
         const windowHeight = window.innerHeight;
         const elementTop = element.getBoundingClientRect().top;
-        const revealPoint = 100;
+        const revealPoint = 150;
         
         if (elementTop < windowHeight - revealPoint) {
             element.classList.add('active');
@@ -72,9 +74,20 @@ function revealOnScroll() {
     });
 }
 
+// Throttle scroll events for better performance
+function handleScroll() {
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            revealOnScroll();
+            ticking = false;
+        });
+        ticking = true;
+    }
+}
+
 // Initial reveal check
 window.addEventListener('load', revealOnScroll);
-window.addEventListener('scroll', revealOnScroll);
+window.addEventListener('scroll', handleScroll);
 
 // Image Popup Functions
 function openImagePopup(imageSrc, imageTitle) {
@@ -141,25 +154,11 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
-// Stagger animation for product cards
-function staggerReveal() {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.transitionDelay = `${index * 0.1}s`;
-        }, 100);
-    });
-}
-
-window.addEventListener('load', staggerReveal);
-
-// Add smooth parallax effect to hero section
-window.addEventListener('scroll', () => {
-    const scrolled = window.scrollY;
-    const hero = document.querySelector('.hero');
-    if (hero && scrolled < window.innerHeight) {
-        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-    }
+// Stagger animation for product cards - Removed for better performance
+// Performance optimized version
+window.addEventListener('load', () => {
+    // Simpler load handler
+    revealOnScroll();
 });
 
 // Prevent default behavior for View Details buttons
@@ -169,17 +168,20 @@ document.querySelectorAll('.view-button').forEach(button => {
     });
 });
 
-// Add loading animation for images
+// Add loading optimization for images - prevent layout shift
 document.addEventListener('DOMContentLoaded', () => {
     const images = document.querySelectorAll('.product-image');
     
     images.forEach(img => {
+        // Set loading attribute for better performance
+        img.loading = 'lazy';
+        
         if (img.complete) {
             img.style.opacity = '1';
         } else {
             img.style.opacity = '0';
             img.addEventListener('load', () => {
-                img.style.transition = 'opacity 0.5s ease';
+                img.style.transition = 'opacity 0.3s ease';
                 img.style.opacity = '1';
             });
         }
