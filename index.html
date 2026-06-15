@@ -9,8 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cinzel:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <style>
     /* ── TOKENS ──────────────────────────────────────── */
     :root {
@@ -1188,8 +1187,9 @@ if(!isTouch()){
   let gemMesh = new THREE.Group();
   scene.add(gemMesh);
   
-  const loader = new THREE.FBXLoader();
-  loader.load('models/diamond.fbx', function(object) {
+  const loader = new THREE.GLTFLoader();
+  loader.load('models/diamond.glb', function(gltf) {
+    const object = gltf.scene;
     const box = new THREE.Box3().setFromObject(object);
     const size = box.getSize(new THREE.Vector3()).length();
     const center = box.getCenter(new THREE.Vector3());
@@ -1201,26 +1201,31 @@ if(!isTouch()){
     const scale = 2.5 / size;
     object.scale.set(scale, scale, scale);
     
+    const meshes = [];
     object.traverse(function(child) {
       if (child.isMesh) {
-        child.material = new THREE.MeshPhongMaterial({
-          color: 0x0a0d1a,
-          specular: new THREE.Color(0xE1C16E),
-          shininess: 280,
-          transparent: true,
-          opacity: 0.65,
-          side: THREE.DoubleSide
-        });
-        
-        const wireMaterial = new THREE.MeshBasicMaterial({
-          color: 0xE1C16E,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.15
-        });
-        const wireMesh = new THREE.Mesh(child.geometry, wireMaterial);
-        child.add(wireMesh);
+        meshes.push(child);
       }
+    });
+    
+    meshes.forEach(function(child) {
+      child.material = new THREE.MeshPhongMaterial({
+        color: 0x0a0d1a,
+        specular: new THREE.Color(0xE1C16E),
+        shininess: 280,
+        transparent: true,
+        opacity: 0.65,
+        side: THREE.DoubleSide
+      });
+      
+      const wireMaterial = new THREE.MeshBasicMaterial({
+        color: 0xE1C16E,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.15
+      });
+      const wireMesh = new THREE.Mesh(child.geometry, wireMaterial);
+      child.add(wireMesh);
     });
     gemMesh.add(object);
   });
