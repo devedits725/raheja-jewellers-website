@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cinzel:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
   <style>
     /* ── TOKENS ──────────────────────────────────────── */
     :root {
@@ -1183,11 +1185,45 @@ if(!isTouch()){
   const camera=new THREE.PerspectiveCamera(50,W/H,0.1,100);
   camera.position.z=4.5;
 
-  const g1=new THREE.OctahedronGeometry(1,0); g1.scale(1,1.6,1);
-  const gemMesh=new THREE.Mesh(g1,new THREE.MeshPhongMaterial({color:0x0a0d1a,specular:new THREE.Color(0xE1C16E),shininess:280,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+  let gemMesh = new THREE.Group();
   scene.add(gemMesh);
-  const gemWire=new THREE.Mesh(g1,new THREE.MeshBasicMaterial({color:0xE1C16E,wireframe:true,transparent:true,opacity:0.28}));
-  scene.add(gemWire);
+  
+  const loader = new THREE.FBXLoader();
+  loader.load('models/diamond.fbx', function(object) {
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3()).length();
+    const center = box.getCenter(new THREE.Vector3());
+    
+    object.position.x += (object.position.x - center.x);
+    object.position.y += (object.position.y - center.y);
+    object.position.z += (object.position.z - center.z);
+    
+    const scale = 2.5 / size;
+    object.scale.set(scale, scale, scale);
+    
+    object.traverse(function(child) {
+      if (child.isMesh) {
+        child.material = new THREE.MeshPhongMaterial({
+          color: 0x0a0d1a,
+          specular: new THREE.Color(0xE1C16E),
+          shininess: 280,
+          transparent: true,
+          opacity: 0.65,
+          side: THREE.DoubleSide
+        });
+        
+        const wireMaterial = new THREE.MeshBasicMaterial({
+          color: 0xE1C16E,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.15
+        });
+        const wireMesh = new THREE.Mesh(child.geometry, wireMaterial);
+        child.add(wireMesh);
+      }
+    });
+    gemMesh.add(object);
+  });
 
   /* Fewer orbiters on mobile */
   const orbCount=isTouch()?3:6;
@@ -1207,8 +1243,10 @@ if(!isTouch()){
     requestAnimationFrame(tick);
     if(isTouch()&&++frameSkip%2!==0) return;
     t+=0.008;
-    gemMesh.rotation.y=gemWire.rotation.y=t*0.4;
-    gemMesh.rotation.x=gemWire.rotation.x=Math.sin(t*0.3)*0.22;
+    if (gemMesh) {
+      gemMesh.rotation.y=t*0.4;
+      gemMesh.rotation.x=Math.sin(t*0.3)*0.22;
+    }
     orbiters.forEach(o=>{
       o.userData.angle+=o.userData.speed*0.012;
       const a=o.userData.angle,r=o.userData.radius;
