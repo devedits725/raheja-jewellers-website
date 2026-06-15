@@ -1172,8 +1172,11 @@ if(!isTouch()){
 
   const renderer=new THREE.WebGLRenderer({canvas,antialias:!isTouch(),alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-  const W=canvas.clientWidth, H=canvas.clientHeight||300;
-  renderer.setSize(W,H);
+  
+  // Safe initial size using parent width if canvas width is 0
+  const W=canvas.clientWidth || canvas.parentElement.clientWidth || 300;
+  const H=canvas.clientHeight || 300;
+  renderer.setSize(W,H,false);
   renderer.setClearColor(0,0);
 
   const scene=new THREE.Scene();
@@ -1181,7 +1184,8 @@ if(!isTouch()){
   camera.position.z=4.5;
 
   const g1=new THREE.OctahedronGeometry(1,0); g1.scale(1,1.6,1);
-  scene.add(new THREE.Mesh(g1,new THREE.MeshPhongMaterial({color:0x0a0d1a,specular:new THREE.Color(0xE1C16E),shininess:280,transparent:true,opacity:0.35,side:THREE.DoubleSide})));
+  const gemMesh=new THREE.Mesh(g1,new THREE.MeshPhongMaterial({color:0x0a0d1a,specular:new THREE.Color(0xE1C16E),shininess:280,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+  scene.add(gemMesh);
   const gemWire=new THREE.Mesh(g1,new THREE.MeshBasicMaterial({color:0xE1C16E,wireframe:true,transparent:true,opacity:0.28}));
   scene.add(gemWire);
 
@@ -1199,13 +1203,12 @@ if(!isTouch()){
   const pl=new THREE.PointLight(0xE1C16E,3,15); pl.position.set(2,3,3); scene.add(pl);
 
   let t=0, frameSkip=0;
-  const gem=scene.children[0];
   (function tick(){
     requestAnimationFrame(tick);
     if(isTouch()&&++frameSkip%2!==0) return;
     t+=0.008;
-    gem.rotation.y=gemWire.rotation.y=t*0.4;
-    gem.rotation.x=gemWire.rotation.x=Math.sin(t*0.3)*0.22;
+    gemMesh.rotation.y=gemWire.rotation.y=t*0.4;
+    gemMesh.rotation.x=gemWire.rotation.x=Math.sin(t*0.3)*0.22;
     orbiters.forEach(o=>{
       o.userData.angle+=o.userData.speed*0.012;
       const a=o.userData.angle,r=o.userData.radius;
@@ -1216,10 +1219,13 @@ if(!isTouch()){
     renderer.render(scene,camera);
   })();
 
-  new ResizeObserver(()=>{
-    const w=canvas.clientWidth, h=canvas.clientHeight||300;
-    camera.aspect=w/h; camera.updateProjectionMatrix();
-    renderer.setSize(w,h);
+  new ResizeObserver(entries=>{
+    for(let entry of entries) {
+      const w=entry.contentRect.width || canvas.clientWidth || 300;
+      const h=entry.contentRect.height || canvas.clientHeight || 300;
+      camera.aspect=w/h; camera.updateProjectionMatrix();
+      renderer.setSize(w,h,false);
+    }
   }).observe(canvas);
 })();
 </script>
