@@ -1209,20 +1209,26 @@ if(!isTouch()){
     });
     
     meshes.forEach(function(child) {
-      child.material = new THREE.MeshPhongMaterial({
-        color: 0x0a0d1a,
-        specular: new THREE.Color(0xE1C16E),
-        shininess: 280,
+      child.material = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        roughness: 0.0,
+        metalness: 0.05,
         transparent: true,
-        opacity: 0.65,
-        side: THREE.DoubleSide
+        opacity: 0.9,
+        transmission: 0.95,
+        ior: 2.417,
+        thickness: 1.5,
+        specularIntensity: 1.0,
+        specularColor: new THREE.Color(0xffffff),
+        side: THREE.DoubleSide,
+        depthWrite: true
       });
       
       const wireMaterial = new THREE.MeshBasicMaterial({
-        color: 0xE1C16E,
+        color: 0xaadaff,
         wireframe: true,
         transparent: true,
-        opacity: 0.15
+        opacity: 0.12
       });
       const wireMesh = new THREE.Mesh(child.geometry, wireMaterial);
       child.add(wireMesh);
@@ -1240,8 +1246,27 @@ if(!isTouch()){
     scene.add(m); orbiters.push(m);
   }
 
-  scene.add(new THREE.AmbientLight(0xffffff,0.15));
-  const pl=new THREE.PointLight(0xE1C16E,3,15); pl.position.set(2,3,3); scene.add(pl);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+  
+  // Gold accent light
+  const pl=new THREE.PointLight(0xE1C16E, 2, 15); 
+  pl.position.set(3, 3, 2); 
+  scene.add(pl);
+
+  // Strong white key light for sharp highlights
+  const plWhite = new THREE.PointLight(0xffffff, 6, 15);
+  plWhite.position.set(-3, 3, 3);
+  scene.add(plWhite);
+
+  // Soft light-blue fill light to match the screenshot reflections
+  const plBlue = new THREE.PointLight(0x7cc2ff, 5, 15);
+  plBlue.position.set(0, -3, 3);
+  scene.add(plBlue);
+
+  // Internal glowing light to make the diamond core shine
+  const innerLight = new THREE.PointLight(0xffffff, 6, 3);
+  innerLight.position.set(0, 0, 0);
+  scene.add(innerLight);
 
   let t=0, frameSkip=0;
   (function tick(){
